@@ -370,11 +370,11 @@ function renderMembers() {
 
   btn.disabled = true;
 
- await api({
-  action: 'setRest',
+await api({
+  action: 'setCheck',
   name,
-  value: String(newVal),
-  pw: adminPw
+  item,
+  value: String(newVal)
 });
 
   btn.disabled = isResting;
