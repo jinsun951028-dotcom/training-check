@@ -174,7 +174,14 @@ body { font-family: 'Noto Sans KR', sans-serif; background: var(--bg); color: va
   <div class="stat-card"><div class="stat-label">미완료</div><div class="stat-val red" id="s-missing">-</div></div>
   <div class="stat-card"><div class="stat-label">총 벌점</div><div class="stat-val red" id="s-score">-</div></div>
 </div>
-
+  
+<div style="max-width:700px;margin:16px auto 0;padding:0 20px;">
+  <div style="font-size:13px;color:var(--muted);margin-bottom:8px;">
+    누적 벌점
+  </div>
+  <div id="totalScores"></div>
+</div>
+  
 <div class="tabs">
   <button class="tab active" onclick="switchTab('check')">이번 주 체크</button>
   <button class="tab" onclick="switchTab('history')">누적 기록</button>
@@ -195,12 +202,7 @@ body { font-family: 'Noto Sans KR', sans-serif; background: var(--bg); color: va
   </div>
 <div id="tab-history" style="display:none;">
 
-  <div style="margin-bottom:16px;">
-    <div style="font-size:13px;color:var(--muted);margin-bottom:8px;">
-      누적 벌점
-    </div>
-    <div id="totalScores"></div>
-  </div>
+
 
   <div id="history-list"></div>
 </div>
