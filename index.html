@@ -131,6 +131,22 @@ body { font-family: 'Noto Sans KR', sans-serif; background: var(--bg); color: va
   .action-bar { flex-wrap: wrap; }
   .btn { font-size: 12px; padding: 9px 14px; }
 }
+  .total-card {
+  background: var(--surface);
+  border: 0.5px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 12px 14px;
+  margin-bottom: 8px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 13px;
+}
+
+.total-card strong {
+  color: var(--red);
+  font-size: 15px;
+}
 </style>
 </head>
 <body>
@@ -177,10 +193,18 @@ body { font-family: 'Noto Sans KR', sans-serif; background: var(--bg); color: va
       <div id="member-list"></div>
     </div>
   </div>
-  <div id="tab-history" style="display:none;">
-    <div id="history-list"></div>
+<div id="tab-history" style="display:none;">
+
+  <div style="margin-bottom:16px;">
+    <div style="font-size:13px;color:var(--muted);margin-bottom:8px;">
+      누적 벌점
+    </div>
+    <div id="totalScores"></div>
   </div>
+
+  <div id="history-list"></div>
 </div>
+  </div>
 
 <div class="action-bar">
   <button class="btn btn-secondary" onclick="openNoticeModal()">📋 공지 복사</button>
@@ -278,8 +302,11 @@ function render() {
   renderStats();
   renderMembers();
   renderHistory();
+  renderTotals(state.history);
+
   const d = new Date();
-  document.getElementById('week-label').textContent = (d.getMonth()+1) + '월 ' + Math.ceil(d.getDate()/7);
+  document.getElementById('week-label').textContent =
+    (d.getMonth()+1) + '월 ' + Math.ceil(d.getDate()/7);
 }
 
 function renderStats() {
@@ -374,6 +401,24 @@ function renderHistory() {
     box.appendChild(body);
     list.appendChild(box);
   });
+}
+function renderTotals(history) {
+const totals = {};
+
+history.forEach(week => {
+week.records.forEach(r => {
+if (!totals[r.name]) totals[r.name] = 0;
+totals[r.name] += Number(r.score || 0);
+});
+});
+
+const sorted = Object.entries(totals)
+.sort((a, b) => b[1] - a[1]);
+
+const container = document.getElementById('totalScores');
+
+container.innerHTML = sorted.map(([name, score]) => `     <div class="total-card">       <span>${name}</span>       <strong>${score}점</strong>     </div>
+  `).join('');
 }
 
 // Admin
