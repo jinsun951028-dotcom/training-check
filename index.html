@@ -345,14 +345,40 @@ function renderMembers() {
       btn.innerHTML = checked ? '✓' : '';
       btn.disabled = isResting;
       btn.onclick = async () => {
-        const newVal = !state.checks[name]?.[item];
-        if (!state.checks[name]) state.checks[name] = {};
-        state.checks[name][item] = newVal;
-        render();
-        btn.disabled = true;
-        await api({ action: 'setCheck', name, item, value: newVal });
-        btn.disabled = isResting;
-      };
+
+  const now = new Date(
+    new Date().toLocaleString("en-US", {
+      timeZone: "Asia/Seoul"
+    })
+  );
+
+  const day = now.getDay();
+
+  // 토요일(6), 일요일(0)은 수정 불가
+  if (day === 6 || day === 0) {
+    showToast('이번 주 체크가 마감되었습니다');
+    return;
+  }
+
+  const newVal = !state.checks[name]?.[item];
+
+  if (!state.checks[name]) state.checks[name] = {};
+
+  state.checks[name][item] = newVal;
+
+  render();
+
+  btn.disabled = true;
+
+  await api({
+    action: 'setCheck',
+    name,
+    item,
+    value: newVal
+  });
+
+  btn.disabled = isResting;
+};
       cell.appendChild(btn);
       row.appendChild(cell);
     });
