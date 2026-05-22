@@ -239,7 +239,7 @@ body { font-family: 'Noto Sans KR', sans-serif; background: var(--bg); color: va
 
 <script>
 const API = 'https://script.google.com/macros/s/AKfycbzsnq_-PekrW1UNfB3Rm2IdZfwcNQ7rIcq2NT4JD6HZ5dZmuP3l5ipAfCuUVoiDnGK8zw/exec';
-const MEMBERS = ['이진선','김유경','김은서','김정은','김진명','맹지혜','맹진열','문서준','박상민','박상희','손예지','심지후','양하은','양혜진','이세림','이은휘','이재현','이태호','장동훈','최서진','최수진','최수현','최은서','현정아'];
+const MEMBERS = ['김유경','김은서','김정은','김진명','맹지혜','맹진열','문서준','박상민','박상희','손예지','심지후','양하은','양혜진','이세림','이은휘','이재현','이진선','이태호','장동훈','최서진','최수진','최수현','최은서','현정아'];
 const ITEMS = ['묵상','기도','말씀'];
 
 let state = { checks: {}, resting: {}, history: [] };
@@ -489,20 +489,38 @@ function showToast(msg) {
 // Countdown
 function updateCountdown() {
   const now = new Date();
-  const day = now.getDay();
-  const daysUntil = (5 - day + 7) % 7 || 7;
-  const target = new Date(now);
-  target.setDate(now.getDate() + daysUntil);
-  target.setHours(23,59,59,0);
-  const diff = target - now;
-  if (diff <= 0) { document.getElementById('timer').textContent = '마감됨'; return; }
-  const d = Math.floor(diff/86400000);
-  const h = Math.floor((diff%86400000)/3600000);
-  const m = Math.floor((diff%3600000)/60000);
-  const s = Math.floor((diff%60000)/1000);
+
+  // 한국 시간 기준으로 계산
+  const koreaNow = new Date(
+    now.toLocaleString("en-US", { timeZone: "Asia/Seoul" })
+  );
+
+  const day = koreaNow.getDay(); // 일0 월1 화2 수3 목4 금5 토6
+
+  // 이번 주 금요일 23:59:59 마감
+  const target = new Date(koreaNow);
+  target.setHours(23, 59, 59, 0);
+
+  // 오늘이 금요일 이후라면 다음 주 금요일로 설정
+  const daysUntilFriday = (5 - day + 7) % 7;
+  target.setDate(koreaNow.getDate() + daysUntilFriday);
+
+  const diff = target - koreaNow;
+
+  if (diff <= 0) {
+    document.getElementById('timer').textContent = '마감됨';
+    return;
+  }
+
+  const d = Math.floor(diff / 86400000);
+  const h = Math.floor((diff % 86400000) / 3600000);
+  const m = Math.floor((diff % 3600000) / 60000);
+  const s = Math.floor((diff % 60000) / 1000);
+
   const parts = [];
-  if (d > 0) parts.push(d+'일');
-  parts.push(h+'시간 '+m+'분 '+s+'초');
+  if (d > 0) parts.push(d + '일');
+  parts.push(h + '시간 ' + m + '분 ' + s + '초');
+
   document.getElementById('timer').textContent = parts.join(' ');
 }
 
