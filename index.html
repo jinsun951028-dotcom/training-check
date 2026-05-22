@@ -1,0 +1,514 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>훈련 체크 — Obeyers</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #0f0f13;
+  --surface: #18181f;
+  --surface2: #1f1f2a;
+  --border: rgba(255,255,255,0.07);
+  --border2: rgba(255,255,255,0.13);
+  --text: #f0f0f4;
+  --muted: #888896;
+  --accent: #7c6ef5;
+  --accent2: #a89ef8;
+  --green: #3ecf8e;
+  --green-bg: rgba(62,207,142,0.1);
+  --amber: #f5a623;
+  --amber-bg: rgba(245,166,35,0.1);
+  --red: #f25f5c;
+  --red-bg: rgba(242,95,92,0.1);
+  --radius: 12px;
+  --radius-sm: 8px;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Noto Sans KR', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; font-size: 14px; }
+
+.header { padding: 20px 20px 0; max-width: 700px; margin: 0 auto; }
+.header-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px; }
+.logo { font-size: 18px; font-weight: 700; letter-spacing: -0.3px; }
+.logo span { color: var(--accent2); }
+.admin-btn { background: var(--surface2); border: 0.5px solid var(--border2); color: var(--muted); padding: 6px 12px; border-radius: 20px; cursor: pointer; font-size: 12px; font-family: inherit; display: flex; align-items: center; gap: 5px; transition: all 0.2s; }
+.admin-btn:hover { color: var(--text); border-color: var(--accent); }
+.admin-badge { display: inline-block; background: var(--accent); color: white; font-size: 10px; padding: 1px 6px; border-radius: 10px; margin-left: 4px; }
+
+.week-bar { max-width: 700px; margin: 14px auto 0; padding: 0 20px; display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
+.week-info { font-size: 13px; color: var(--muted); }
+.week-info strong { color: var(--text); font-weight: 500; }
+.countdown { font-size: 12px; color: var(--muted); background: var(--surface2); border: 0.5px solid var(--border); padding: 5px 12px; border-radius: 20px; }
+.countdown span { color: var(--accent2); font-weight: 500; }
+
+.stats { max-width: 700px; margin: 16px auto 0; padding: 0 20px; display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+.stat-card { background: var(--surface); border: 0.5px solid var(--border); border-radius: var(--radius-sm); padding: 12px; text-align: center; }
+.stat-label { font-size: 11px; color: var(--muted); margin-bottom: 4px; }
+.stat-val { font-size: 20px; font-weight: 700; }
+.stat-val.green { color: var(--green); }
+.stat-val.red { color: var(--red); }
+.stat-val.accent { color: var(--accent2); }
+
+.tabs { max-width: 700px; margin: 16px auto 0; padding: 0 20px; display: flex; gap: 4px; border-bottom: 0.5px solid var(--border); }
+.tab { padding: 8px 16px; font-size: 13px; font-weight: 500; color: var(--muted); cursor: pointer; border-bottom: 2px solid transparent; transition: all 0.2s; font-family: inherit; background: none; border-top: none; border-left: none; border-right: none; }
+.tab.active { color: var(--accent2); border-bottom-color: var(--accent); }
+.tab:hover:not(.active) { color: var(--text); }
+
+.content { max-width: 700px; margin: 0 auto; padding: 16px 20px 80px; }
+
+.table-wrap { background: var(--surface); border: 0.5px solid var(--border); border-radius: var(--radius); overflow: hidden; }
+.table-header { display: grid; grid-template-columns: 1fr 70px 70px 70px 56px; padding: 10px 14px; background: var(--surface2); border-bottom: 0.5px solid var(--border); font-size: 11px; color: var(--muted); font-weight: 500; text-align: center; }
+.table-header .name-h { text-align: left; }
+.member-row { display: grid; grid-template-columns: 1fr 70px 70px 70px 56px; padding: 10px 14px; border-bottom: 0.5px solid var(--border); align-items: center; transition: background 0.15s; }
+.member-row:last-child { border-bottom: none; }
+.member-row:hover { background: rgba(255,255,255,0.02); }
+.member-row.resting { opacity: 0.35; }
+.member-name { font-size: 13px; }
+.check-cell { display: flex; justify-content: center; }
+.chk { width: 28px; height: 28px; border-radius: 7px; border: 1.5px solid rgba(255,255,255,0.15); background: transparent; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.15s; font-size: 14px; color: transparent; }
+.chk:hover:not(:disabled) { border-color: var(--accent); }
+.chk.done { background: var(--green); border-color: var(--green); color: white; }
+.chk:disabled { cursor: default; opacity: 0.5; }
+.score-pill { display: inline-block; font-size: 11px; font-weight: 600; padding: 3px 8px; border-radius: 20px; text-align: center; min-width: 40px; }
+.score-0 { background: var(--green-bg); color: var(--green); }
+.score-1 { background: var(--amber-bg); color: var(--amber); }
+.score-2 { background: rgba(242,95,92,0.15); color: #f87c79; }
+.score-3 { background: var(--red-bg); color: var(--red); }
+
+.action-bar { position: fixed; bottom: 0; left: 0; right: 0; background: var(--surface); border-top: 0.5px solid var(--border2); padding: 12px 20px; display: flex; gap: 10px; justify-content: center; z-index: 50; }
+.btn { padding: 10px 20px; border-radius: var(--radius-sm); font-size: 13px; font-weight: 500; cursor: pointer; font-family: inherit; border: 0.5px solid var(--border2); transition: all 0.18s; display: flex; align-items: center; gap: 7px; }
+.btn-primary { background: var(--accent); color: white; border-color: var(--accent); }
+.btn-primary:hover { background: var(--accent2); }
+.btn-secondary { background: var(--surface2); color: var(--text); }
+.btn-secondary:hover { border-color: var(--accent); color: var(--accent2); }
+.btn-danger { background: transparent; color: var(--red); border-color: rgba(242,95,92,0.3); }
+.btn-danger:hover { background: var(--red-bg); }
+
+.history-week { background: var(--surface); border: 0.5px solid var(--border); border-radius: var(--radius); margin-bottom: 12px; overflow: hidden; }
+.history-week-header { padding: 12px 16px; background: var(--surface2); border-bottom: 0.5px solid var(--border); display: flex; align-items: center; justify-content: space-between; cursor: pointer; user-select: none; }
+.history-week-title { font-size: 14px; font-weight: 500; }
+.history-week-summary { font-size: 12px; color: var(--muted); }
+.history-week-body { padding: 10px 16px; }
+.history-row { display: flex; align-items: center; justify-content: space-between; padding: 6px 0; border-bottom: 0.5px solid var(--border); font-size: 13px; }
+.history-row:last-child { border-bottom: none; }
+.history-detail { color: var(--muted); font-size: 12px; }
+.history-score { font-weight: 600; color: var(--red); }
+.empty-state { text-align: center; padding: 40px 20px; color: var(--muted); font-size: 13px; }
+
+.modal-bg { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 200; align-items: center; justify-content: center; padding: 20px; }
+.modal-bg.open { display: flex; }
+.modal { background: var(--surface); border: 0.5px solid var(--border2); border-radius: var(--radius); width: 100%; max-width: 360px; padding: 20px; max-height: 80vh; overflow-y: auto; }
+.modal h3 { font-size: 16px; font-weight: 600; margin-bottom: 16px; }
+.modal-row { display: flex; align-items: center; justify-content: space-between; padding: 9px 0; border-bottom: 0.5px solid var(--border); font-size: 13px; }
+.modal-row:last-of-type { border-bottom: none; }
+.toggle { width: 38px; height: 22px; border-radius: 11px; border: none; cursor: pointer; position: relative; transition: background 0.2s; flex-shrink: 0; }
+.toggle.on { background: var(--green); }
+.toggle.off { background: rgba(255,255,255,0.15); }
+.toggle::after { content: ''; position: absolute; width: 16px; height: 16px; border-radius: 50%; background: white; top: 3px; transition: left 0.2s; }
+.toggle.on::after { left: 19px; }
+.toggle.off::after { left: 3px; }
+.modal-footer { display: flex; gap: 8px; margin-top: 16px; }
+.modal-footer .btn { flex: 1; justify-content: center; }
+
+.pw-input { width: 100%; background: var(--surface2); border: 0.5px solid var(--border2); color: var(--text); padding: 10px 14px; border-radius: var(--radius-sm); font-family: inherit; font-size: 14px; margin-bottom: 12px; outline: none; }
+.pw-input:focus { border-color: var(--accent); }
+
+.notice-box { background: var(--surface2); border: 0.5px solid var(--border); border-radius: var(--radius-sm); padding: 14px; font-size: 13px; line-height: 1.8; white-space: pre-wrap; color: var(--text); margin-bottom: 12px; max-height: 300px; overflow-y: auto; }
+
+.toast { position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%); background: rgba(30,30,40,0.95); border: 0.5px solid var(--border2); color: var(--text); font-size: 13px; padding: 9px 18px; border-radius: 20px; opacity: 0; transition: opacity 0.25s; pointer-events: none; z-index: 300; white-space: nowrap; }
+.toast.show { opacity: 1; }
+
+.loading-overlay { position: fixed; inset: 0; background: var(--bg); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 999; gap: 16px; }
+.spinner { width: 32px; height: 32px; border: 2px solid var(--border2); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.8s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+.loading-text { font-size: 13px; color: var(--muted); }
+
+@media (max-width: 480px) {
+  .stats { grid-template-columns: repeat(2, 1fr); }
+  .table-header, .member-row { grid-template-columns: 1fr 52px 52px 52px 46px; padding: 8px 10px; }
+  .chk { width: 26px; height: 26px; font-size: 13px; }
+  .action-bar { flex-wrap: wrap; }
+  .btn { font-size: 12px; padding: 9px 14px; }
+}
+</style>
+</head>
+<body>
+
+<div class="loading-overlay" id="loading">
+  <div class="spinner"></div>
+  <div class="loading-text">불러오는 중...</div>
+</div>
+
+<div class="header">
+  <div class="header-top">
+    <div class="logo">훈련 <span>체크</span></div>
+    <button class="admin-btn" onclick="openAdminAuth()" id="admin-btn">⚙ 관리자</button>
+  </div>
+</div>
+
+<div class="week-bar">
+  <div class="week-info"><strong id="week-label">-</strong> 주차</div>
+  <div class="countdown">마감까지 <span id="timer">-</span></div>
+</div>
+
+<div class="stats">
+  <div class="stat-card"><div class="stat-label">참여 인원</div><div class="stat-val accent" id="s-active">-</div></div>
+  <div class="stat-card"><div class="stat-label">완료</div><div class="stat-val green" id="s-done">-</div></div>
+  <div class="stat-card"><div class="stat-label">미완료</div><div class="stat-val red" id="s-missing">-</div></div>
+  <div class="stat-card"><div class="stat-label">총 벌점</div><div class="stat-val red" id="s-score">-</div></div>
+</div>
+
+<div class="tabs">
+  <button class="tab active" onclick="switchTab('check')">이번 주 체크</button>
+  <button class="tab" onclick="switchTab('history')">누적 기록</button>
+</div>
+
+<div class="content">
+  <div id="tab-check">
+    <div class="table-wrap">
+      <div class="table-header">
+        <div class="name-h">이름</div>
+        <div>묵상</div>
+        <div>기도</div>
+        <div>말씀</div>
+        <div>벌점</div>
+      </div>
+      <div id="member-list"></div>
+    </div>
+  </div>
+  <div id="tab-history" style="display:none;">
+    <div id="history-list"></div>
+  </div>
+</div>
+
+<div class="action-bar">
+  <button class="btn btn-secondary" onclick="openNoticeModal()">📋 공지 복사</button>
+  <button class="btn btn-primary" id="admin-actions" style="display:none" onclick="openRestModal()">⚙ 휴식 설정</button>
+  <button class="btn btn-danger" id="reset-btn" style="display:none" onclick="confirmReset()">↺ 주차 마감</button>
+</div>
+
+<!-- Password modal -->
+<div class="modal-bg" id="pw-modal">
+  <div class="modal">
+    <h3>🔒 관리자 로그인</h3>
+    <input type="password" class="pw-input" id="pw-input" placeholder="비밀번호 입력" onkeydown="if(event.key==='Enter')checkPw()">
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('pw-modal')">취소</button>
+      <button class="btn btn-primary" onclick="checkPw()">확인</button>
+    </div>
+  </div>
+</div>
+
+<!-- Rest modal -->
+<div class="modal-bg" id="rest-modal">
+  <div class="modal">
+    <h3>💤 휴식 멤버 설정</h3>
+    <div id="rest-list"></div>
+    <div class="modal-footer">
+      <button class="btn btn-primary" style="width:100%;justify-content:center" onclick="closeModal('rest-modal')">완료</button>
+    </div>
+  </div>
+</div>
+
+<!-- Notice modal -->
+<div class="modal-bg" id="notice-modal">
+  <div class="modal">
+    <h3>🛎 공지 미리보기</h3>
+    <div class="notice-box" id="notice-text"></div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('notice-modal')">닫기</button>
+      <button class="btn btn-primary" onclick="copyNotice()">복사</button>
+    </div>
+  </div>
+</div>
+
+<!-- Reset modal -->
+<div class="modal-bg" id="reset-modal">
+  <div class="modal">
+    <h3>↺ 주차 마감</h3>
+    <p style="font-size:13px;color:var(--muted);line-height:1.6;margin-bottom:16px;">현재 체크 현황을 누적 기록에 저장하고 초기화합니다.</p>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('reset-modal')">취소</button>
+      <button class="btn btn-danger" onclick="doReset()">마감 확인</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const API = 'https://script.google.com/macros/s/AKfycby__bO5ECI0Zlh3Lusdl5UNSm-VJbRyHoE-i7DGfRA3xt32p9GuHOs0quFcAIs6gwnftQ/exec';
+const MEMBERS = ['이진선','김유경','김은서','김정은','김진명','맹지혜','맹진열','문서준','박상민','박상희','손예지','심지후','양하은','양혜진','이세림','이은휘','이재현','이태호','장동훈','최서진','최수진','최수현','최은서','현정아'];
+const ITEMS = ['묵상','기도','말씀'];
+
+let state = { checks: {}, resting: {}, history: [] };
+let isAdmin = false;
+let adminPw = '';
+
+async function api(params) {
+  const url = API + '?' + new URLSearchParams(params);
+  const res = await fetch(url);
+  return res.json();
+}
+
+async function loadState() {
+  try {
+    const data = await api({ action: 'getState' });
+    if (data.ok) {
+      state = data;
+      render();
+    } else {
+      showToast('데이터 로드 실패: ' + data.error);
+    }
+  } catch(e) {
+    showToast('서버 연결 오류');
+  }
+  document.getElementById('loading').style.display = 'none';
+}
+
+function getScore(name) {
+  if (state.resting[name]) return 0;
+  let s = 0;
+  ITEMS.forEach(item => { if (!state.checks[name]?.[item]) s++; });
+  return s;
+}
+
+function render() {
+  renderStats();
+  renderMembers();
+  renderHistory();
+  const d = new Date();
+  document.getElementById('week-label').textContent = (d.getMonth()+1) + '월 ' + Math.ceil(d.getDate()/7);
+}
+
+function renderStats() {
+  const active = MEMBERS.filter(n => !state.resting[n]);
+  const done = active.filter(n => getScore(n) === 0).length;
+  const total = active.reduce((a,n) => a + getScore(n), 0);
+  document.getElementById('s-active').textContent = active.length;
+  document.getElementById('s-done').textContent = done;
+  document.getElementById('s-missing').textContent = active.length - done;
+  document.getElementById('s-score').textContent = total + '점';
+}
+
+function renderMembers() {
+  const list = document.getElementById('member-list');
+  list.innerHTML = '';
+  MEMBERS.forEach(name => {
+    const isResting = state.resting[name];
+    const score = getScore(name);
+    const row = document.createElement('div');
+    row.className = 'member-row' + (isResting ? ' resting' : '');
+
+    const nameDiv = document.createElement('div');
+    nameDiv.className = 'member-name';
+    nameDiv.textContent = name;
+    row.appendChild(nameDiv);
+
+    ITEMS.forEach(item => {
+      const cell = document.createElement('div');
+      cell.className = 'check-cell';
+      const btn = document.createElement('button');
+      const checked = state.checks[name]?.[item];
+      btn.className = 'chk' + (checked ? ' done' : '');
+      btn.innerHTML = checked ? '✓' : '';
+      btn.disabled = isResting;
+      btn.onclick = async () => {
+        const newVal = !state.checks[name]?.[item];
+        if (!state.checks[name]) state.checks[name] = {};
+        state.checks[name][item] = newVal;
+        render();
+        btn.disabled = true;
+        await api({ action: 'setCheck', name, item, value: newVal });
+        btn.disabled = isResting;
+      };
+      cell.appendChild(btn);
+      row.appendChild(cell);
+    });
+
+    const scoreCell = document.createElement('div');
+    scoreCell.style.cssText = 'display:flex;justify-content:center;';
+    if (!isResting) {
+      const pill = document.createElement('span');
+      pill.className = `score-pill score-${Math.min(score,3)}`;
+      pill.textContent = score === 0 ? '완료' : `+${score}`;
+      scoreCell.appendChild(pill);
+    }
+    row.appendChild(scoreCell);
+    list.appendChild(row);
+  });
+}
+
+function renderHistory() {
+  const list = document.getElementById('history-list');
+  if (!state.history || state.history.length === 0) {
+    list.innerHTML = '<div class="empty-state">아직 기록된 주차가 없습니다.</div>';
+    return;
+  }
+  list.innerHTML = '';
+  state.history.forEach(week => {
+    const box = document.createElement('div');
+    box.className = 'history-week';
+    const totalScore = week.records.reduce((a,r) => a + Number(r.score), 0);
+    const hdr = document.createElement('div');
+    hdr.className = 'history-week-header';
+    hdr.innerHTML = `<span class="history-week-title">${week.label}</span><span class="history-week-summary">총 벌점 ${totalScore}점 · 미완료 ${week.records.length}명</span>`;
+    const body = document.createElement('div');
+    body.className = 'history-week-body';
+    body.style.display = 'none';
+    let open = false;
+    hdr.onclick = () => { open = !open; body.style.display = open ? 'block' : 'none'; };
+
+    if (!week.records || week.records.length === 0 || (week.records[0] && !week.records[0].name)) {
+      body.innerHTML = '<div style="padding:10px 0;font-size:13px;color:var(--green)">전원 완료 🎉</div>';
+    } else {
+      week.records.forEach(r => {
+        const row = document.createElement('div');
+        row.className = 'history-row';
+        row.innerHTML = `<div><span>${r.name}</span> <span class="history-detail">${r.detail}</span></div><span class="history-score">+${r.score}</span>`;
+        body.appendChild(row);
+      });
+    }
+    box.appendChild(hdr);
+    box.appendChild(body);
+    list.appendChild(box);
+  });
+}
+
+// Admin
+function openAdminAuth() {
+  if (isAdmin) { isAdmin = false; adminPw = ''; updateAdminUI(); showToast('로그아웃'); return; }
+  document.getElementById('pw-input').value = '';
+  openModal('pw-modal');
+  setTimeout(() => document.getElementById('pw-input').focus(), 100);
+}
+
+async function checkPw() {
+  const pw = document.getElementById('pw-input').value;
+  const res = await api({ action: 'setRest', name: '이진선', value: String(state.resting['이진선'] || false), pw });
+  if (res.ok) {
+    isAdmin = true; adminPw = pw;
+    closeModal('pw-modal'); updateAdminUI(); showToast('관리자 모드');
+  } else {
+    document.getElementById('pw-input').value = '';
+    showToast('비밀번호가 틀렸습니다');
+  }
+}
+
+function updateAdminUI() {
+  document.getElementById('admin-btn').innerHTML = isAdmin ? '⚙ 관리자 <span class="admin-badge">ON</span>' : '⚙ 관리자';
+  document.getElementById('admin-actions').style.display = isAdmin ? '' : 'none';
+  document.getElementById('reset-btn').style.display = isAdmin ? '' : 'none';
+}
+
+function openRestModal() {
+  const list = document.getElementById('rest-list');
+  list.innerHTML = '';
+  MEMBERS.forEach(name => {
+    const row = document.createElement('div');
+    row.className = 'modal-row';
+    const lbl = document.createElement('span');
+    lbl.textContent = name;
+    const btn = document.createElement('button');
+    btn.className = 'toggle ' + (state.resting[name] ? 'off' : 'on');
+    btn.onclick = async () => {
+      const newVal = !state.resting[name];
+      state.resting[name] = newVal;
+      btn.className = 'toggle ' + (newVal ? 'off' : 'on');
+      render();
+      await api({ action: 'setRest', name, value: String(newVal), pw: adminPw });
+    };
+    row.appendChild(lbl); row.appendChild(btn);
+    list.appendChild(row);
+  });
+  openModal('rest-modal');
+}
+
+// Notice
+function buildNotice() {
+  const missing = MEMBERS.filter(n => !state.resting[n] && getScore(n) > 0);
+  const cumulative = {};
+  (state.history || []).forEach(week => {
+    (week.records || []).forEach(r => {
+      if (r.name) cumulative[r.name] = (cumulative[r.name] || 0) + Number(r.score);
+    });
+  });
+  if (missing.length === 0) return '모두 완료했습니다! 수고하셨습니다 :)';
+  let text = '🛎️ 훈련 벌점\n';
+  missing.forEach(name => {
+    const s = getScore(name);
+    const cum = (cumulative[name] || 0) + s;
+    text += `${name} +${s}${cum > s ? ` (누적${cum})` : ''}\n`;
+  });
+  return text.trim();
+}
+
+function openNoticeModal() {
+  document.getElementById('notice-text').textContent = buildNotice();
+  openModal('notice-modal');
+}
+
+function copyNotice() {
+  const text = document.getElementById('notice-text').textContent;
+  navigator.clipboard.writeText(text)
+    .then(() => { closeModal('notice-modal'); showToast('공지 복사 완료!'); })
+    .catch(() => { prompt('복사하세요:', text); });
+}
+
+// Reset
+function confirmReset() { openModal('reset-modal'); }
+async function doReset() {
+  closeModal('reset-modal');
+  document.getElementById('loading').style.display = 'flex';
+  document.querySelector('.loading-text').textContent = '마감 처리 중...';
+  const res = await api({ action: 'closeWeek', pw: adminPw });
+  if (res.ok) { showToast('주차 마감 완료!'); await loadState(); }
+  else { showToast('오류: ' + res.error); document.getElementById('loading').style.display = 'none'; }
+}
+
+// Tabs
+function switchTab(tab) {
+  document.querySelectorAll('.tab').forEach((t,i) => t.classList.toggle('active', (i===0&&tab==='check')||(i===1&&tab==='history')));
+  document.getElementById('tab-check').style.display = tab==='check' ? '' : 'none';
+  document.getElementById('tab-history').style.display = tab==='history' ? '' : 'none';
+}
+
+// Modal
+function openModal(id) { document.getElementById(id).classList.add('open'); }
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+document.querySelectorAll('.modal-bg').forEach(bg => bg.addEventListener('click', e => { if(e.target===bg) bg.classList.remove('open'); }));
+
+// Toast
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2500);
+}
+
+// Countdown
+function updateCountdown() {
+  const now = new Date();
+  const day = now.getDay();
+  const daysUntil = (5 - day + 7) % 7 || 7;
+  const target = new Date(now);
+  target.setDate(now.getDate() + daysUntil);
+  target.setHours(23,59,59,0);
+  const diff = target - now;
+  if (diff <= 0) { document.getElementById('timer').textContent = '마감됨'; return; }
+  const d = Math.floor(diff/86400000);
+  const h = Math.floor((diff%86400000)/3600000);
+  const m = Math.floor((diff%3600000)/60000);
+  const s = Math.floor((diff%60000)/1000);
+  const parts = [];
+  if (d > 0) parts.push(d+'일');
+  parts.push(h+'시간 '+m+'분 '+s+'초');
+  document.getElementById('timer').textContent = parts.join(' ');
+}
+
+updateCountdown();
+setInterval(updateCountdown, 1000);
+loadState();
+</script>
+</body>
+</html>
