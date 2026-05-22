@@ -517,9 +517,22 @@ async function doReset() {
 
 // Tabs
 function switchTab(tab) {
-  document.querySelectorAll('.tab').forEach((t,i) => t.classList.toggle('active', (i===0&&tab==='check')||(i===1&&tab==='history')));
-  document.getElementById('tab-check').style.display = tab==='check' ? '' : 'none';
-  document.getElementById('tab-history').style.display = tab==='history' ? '' : 'none';
+
+  document.querySelectorAll('.tab').forEach((t, i) =>
+    t.classList.toggle(
+      'active',
+      (i === 0 && tab === 'check') ||
+      (i === 1 && tab === 'history')
+    )
+  );
+
+  // 이번주 체크 탭
+  document.getElementById('tab-check').style.display =
+    tab === 'check' ? 'block' : 'none';
+
+  // 누적 기록 탭
+  document.getElementById('tab-history').style.display =
+    tab === 'history' ? 'block' : 'none';
 }
 
 // Modal
